@@ -1,3 +1,4 @@
+package HOTELMANAGEMENT;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
@@ -7,7 +8,7 @@ class ROOM {
     int capacity;
     double roomPrice;
     String roomStatus;
-    String roomBookS;
+    String bookStatus;
 }
 class BOOK {
     String guestName;
@@ -16,13 +17,17 @@ class BOOK {
     int nofNights;
     int reservationID;
     String bookedRoom;
+    String reservationStatus;
 }
 public class HOTELMANAGEMENT {
     static Scanner scanner = new Scanner(System.in);
     static Random random = new Random();
     static ArrayList<ROOM> room = new ArrayList<>();
-    static ROOM uav;
+    static ROOM rcap;
+    static ROOM del; // deletion of room in admin panel
     static ArrayList<BOOK> book = new ArrayList<>();
+    static BOOK rev;
+    static BOOK revstat;
     static String user = "deluxe";
     static String pass = "deluxe123";
     public static void main(String[] args) {
@@ -112,7 +117,7 @@ public class HOTELMANAGEMENT {
                 return;
             }
             for(ROOM rms : room) {
-                System.out.println("|Room Number: " + rms.roomNumber
+             System.out.println("|Room Number: " + rms.roomNumber
              + "|Room Type: "
              + rms.roomType 
              + "|Capacity: " 
@@ -120,7 +125,7 @@ public class HOTELMANAGEMENT {
              + "|Room Price: " 
              + rms.roomPrice 
              + "|Status: " 
-             + rms.roomBookS);
+             + rms.bookStatus);
             }
             System.out.println("[1] Book");
             System.out.println("[2] Back");
@@ -162,7 +167,7 @@ public class HOTELMANAGEMENT {
             for(ROOM rms : room) {
                 if(croomN.equals(rms.roomNumber)) {
                     System.out.println("Room found.");
-                    uav = rms;
+                    rcap = rms;
                     find = true;
                     System.out.println("|Room number: " +
                      rms.roomNumber + " |Room price: " +
@@ -170,17 +175,18 @@ public class HOTELMANAGEMENT {
                      rms.capacity + " |Room type: " + rms.roomType);
                 }
             }
-            //BUG 1:
-            //BUG 1:
-            //BUG 1:
-            if(uav.roomBookS.equalsIgnoreCase("Unavailable")) {
-                System.out.println("Room is currently under maintenance.");
-                find = false;
-                continue;
-            }
             if(!find) {
                 System.out.println("Room not found or unavailable.");
                 continue;
+            }
+
+            if(rcap.bookStatus.equals("Occupied")) {
+                System.out.println("Room " + croomN + " is already occupied.");
+                return;
+            }
+            else if(rcap.bookStatus.equals("Unavailable")) {
+                System.out.println("Room " + croomN + " is currently unavailable.");
+                return;
             }
             System.out.println("=====GUEST-INFORMATION=====");
             System.out.println("Guest name: ");
@@ -209,12 +215,11 @@ public class HOTELMANAGEMENT {
                 continue;
             }
 
-            for(ROOM rms : room) {
-                if(gcap > rms.capacity) {
-                    System.out.println("Not enough capacity for the chosen room.");
-                    return;
-                }
+            if(gcap > rcap.capacity) {
+                System.out.println("Not enough capacity for that chosen room.");
+                continue;
             }
+
             System.out.println("Number of nights: ");
             int nNights;
 
@@ -234,8 +239,6 @@ public class HOTELMANAGEMENT {
                 if(croomN.equals(rms.roomNumber)) {
                     iNights = nNights;
                     nNights *= rms.roomPrice;
-                    rms.roomBookS = "Occupied";
-                    System.out.println(rms.roomBookS);
                     System.out.println("=====BOOKING-SUMMARY=====");
                     System.out.println("Guest name: " + guest);
                     System.out.println("Room No: " + rms.roomNumber);
@@ -269,6 +272,9 @@ public class HOTELMANAGEMENT {
                 case 1 : {
                     int rNum = random.nextInt(100,999);
                     BOOK bookV = new BOOK();
+                    revstat = bookV;
+                    rcap.bookStatus = "Occupied";
+                    bookV.reservationStatus = "Active";
                     bookV.bookedRoom = croomN;
                     bookV.guestName = guest;
                     bookV.contactNumber = cNumber;
@@ -293,10 +299,93 @@ public class HOTELMANAGEMENT {
         }
     }
     static void CANCEL() {
+        while(true) {
+            boolean resfind = false;
+            System.out.println("=====CANCEL-RESERVATION=====");
 
+            if(book.isEmpty()) {
+                System.out.println("No reservations at the moment.");
+                return;
+            }
+            System.out.println("Enter Reservation ID: ");
+            int resID;
+
+            try {
+                resID = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Numbers only!");
+                continue;
+            }
+
+            for(BOOK bks : book) {
+                if(resID == bks.reservationID) {
+                    resfind = true;
+                    rev = bks;
+                    System.out.println("Reservation Found.");
+                    System.out.println("|Guest: " + bks.guestName + "|Room: " + bks.bookedRoom + "|RES: " + bks.reservationStatus);
+                }
+            }
+            
+            if(!resfind) {
+                System.out.println("Reservation not found.");
+                return;
+            }
+
+            if(rev.reservationStatus.equalsIgnoreCase("Cancelled")) {
+                System.out.println("This reservation is cancelled.");
+                return;
+            }
+
+            System.out.println("Cancel this reservation? ");
+            System.out.println("[1] Yes");
+            System.out.println("[2] No");
+            int crev = - 1;
+
+            try {
+                crev = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Numbers only!");
+                continue;
+            }
+
+            if(crev < 1 || crev >= 3) {
+                System.out.println("Out of range.");
+                continue;
+            }
+
+            switch(crev) {
+                case 1 : {
+                    rev.reservationStatus = "Cancelled";
+                    for(ROOM rms : room) {
+                        if(rms.roomNumber.equals(rev.bookedRoom)) {
+                            rms.bookStatus = "Available";
+                            break;
+                        }
+                    }
+                    System.out.println("Reservation cancelled successfully.");
+                    System.out.println("Room is now available.");
+                    return;
+                }
+                case 2 : {
+                    return;
+                }
+            }
+        }
     }
     static void VIEW() {
+        System.out.println("=====VIEW-RESERVATIONS=====");
 
+        if(book.isEmpty()) {
+            System.out.println("No room reservations at the moment.");
+            return;
+        }
+        for(int i = 0; i < book.size(); i++) {
+            revstat = book.get(i);
+            System.out.println((i + 1) + ".) " + "|ID: " + revstat.reservationID  + 
+            "|Guest: " + revstat.guestName + 
+            "|Room: " + revstat.bookedRoom + 
+            "|Reservation status: " + revstat.reservationStatus);
+        }
     }
     static void ADMINMENU() {
         while(true) {
@@ -304,7 +393,8 @@ public class HOTELMANAGEMENT {
             System.out.println("[1] Add Room");
             System.out.println("[2] Remove Room");
             System.out.println("[3] View Room Status");
-            System.out.println("[4] Back");
+            System.out.println("[4] Total revenue");
+            System.out.println("[5] Back");
 
             System.out.println("Enter an option: ");
             int option;
@@ -324,7 +414,8 @@ public class HOTELMANAGEMENT {
                 case 1 -> ADDROOM();
                 case 2 -> REMOVE();
                 case 3 -> VIEWRS();
-                case 4 -> {
+                case 4 -> REVENUE();
+                case 5 -> {
                     while(true) {
                         System.out.println("Go back to main menu? (Yes/No)");
                         String back = scanner.nextLine();
@@ -419,17 +510,18 @@ public class HOTELMANAGEMENT {
 
 
             ROOM roomA = new ROOM();
+            del = roomA;
             roomA.roomNumber = roomNum;
             roomA.roomType = roomT;
             roomA.capacity = cap;
             roomA.roomPrice = roomP;
             if(rst.equalsIgnoreCase("Active")) {
                 roomA.roomStatus = rst;
-                roomA.roomBookS = "Available";
+                roomA.bookStatus = "Available";
             }
             else if(rst.equalsIgnoreCase("Under-Maintenance")) {
                 roomA.roomStatus = rst;
-                roomA.roomBookS = "Unavailable";
+                roomA.bookStatus = "Unavailable";
             }
             room.add(roomA);
             System.out.println("Successfully added room.");
@@ -439,7 +531,37 @@ public class HOTELMANAGEMENT {
     static void REMOVE() {
         while(true) {
             System.out.println("=====REMOVE-ROOM=====");
-            
+
+            if(room.isEmpty()) {
+                System.out.println("No available room to remove.");
+                return;
+            }
+
+            for(int i = 0; i < room.size(); i++) {
+                del = room.get(i);
+                System.out.println("Rooms:");
+                System.out.println((i + 1) + ".) "+"|Room number: " + del.roomNumber 
+                + "|Room Type: " + del.roomType + "|Capacity: " 
+                + del.capacity + "|Room Price: " + del.roomPrice 
+                + "|Status: " + del.roomStatus);
+            }
+            System.out.println("Pick a room to remove: ");
+            int rmtNum = -1;
+
+            try {
+                rmtNum = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Numbers only!");
+                continue;
+            }
+
+            if(rmtNum < 1 || rmtNum > room.size()) {
+                System.out.println("Out of range!");
+            }
+
+            room.remove(rmtNum - 1);
+            System.out.println("Successfully removed room " + del.roomNumber);
+            return;
         }
     }
     static void VIEWRS() {
@@ -460,5 +582,8 @@ public class HOTELMANAGEMENT {
              + "|Status: " 
              + rms.roomStatus);
         }
+    }
+    static void REVENUE() {
+        System.out.println("=====REVENUE-MENU=====");
     }
 }
