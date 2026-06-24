@@ -9,6 +9,7 @@ class ROOM {
     double roomPrice;
     String roomStatus;
     String bookStatus;
+    double totalRevenue;
 }
 class BOOK {
     String guestName;
@@ -18,6 +19,7 @@ class BOOK {
     int reservationID;
     String bookedRoom;
     String reservationStatus;
+    int bookedIncrementation;
 }
 public class HOTELMANAGEMENT {
     static Scanner scanner = new Scanner(System.in);
@@ -66,6 +68,9 @@ public class HOTELMANAGEMENT {
                         String exit = scanner.nextLine();
 
                         if(exit.equalsIgnoreCase("Yes")) {
+                            System.out.println("===================================");
+                            System.out.println("Thanks for using deluxe hotel management system.");
+                            System.out.println("===================================");
                             return;
                         }
                         else if(exit.equalsIgnoreCase("No")) {
@@ -153,6 +158,7 @@ public class HOTELMANAGEMENT {
     }
     static void BOOKROOM() {
         int iNights = 0;
+        double totalN = 0.0;
         while(true) {
             boolean find = false;
             System.out.println("=====BOOK-ROOM=====");
@@ -238,7 +244,8 @@ public class HOTELMANAGEMENT {
             for(ROOM rms : room) {
                 if(croomN.equals(rms.roomNumber)) {
                     iNights = nNights;
-                    nNights *= rms.roomPrice;
+                    totalN = nNights * rms.roomPrice;
+                    rms.totalRevenue += totalN;
                     System.out.println("=====BOOKING-SUMMARY=====");
                     System.out.println("Guest name: " + guest);
                     System.out.println("Room No: " + rms.roomNumber);
@@ -246,7 +253,7 @@ public class HOTELMANAGEMENT {
                     System.out.println("Price: " + rms.roomPrice);
                     System.out.println("Nights: " + iNights);
                     System.out.println("=========================");
-                    System.out.println("Total: " + nNights);
+                    System.out.println("Total: " + totalN);
                     System.out.println("=========================");
                 }
             }
@@ -275,6 +282,7 @@ public class HOTELMANAGEMENT {
                     revstat = bookV;
                     rcap.bookStatus = "Occupied";
                     bookV.reservationStatus = "Active";
+                    bookV.bookedIncrementation = 1;
                     bookV.bookedRoom = croomN;
                     bookV.guestName = guest;
                     bookV.contactNumber = cNumber;
@@ -322,7 +330,7 @@ public class HOTELMANAGEMENT {
                     resfind = true;
                     rev = bks;
                     System.out.println("Reservation Found.");
-                    System.out.println("|Guest: " + bks.guestName + "|Room: " + bks.bookedRoom + "|RES: " + bks.reservationStatus);
+                    System.out.println("|Guest: " + bks.guestName + "|Room: " + bks.bookedRoom + "|Reservation Status: " + bks.reservationStatus);
                 }
             }
             
@@ -406,7 +414,7 @@ public class HOTELMANAGEMENT {
                 continue;
             }
 
-            if(option < 1 || option >= 5) {
+            if(option < 1 || option >= 6) {
                 System.out.println("Out of range.");
                 continue;
             }
@@ -444,7 +452,6 @@ public class HOTELMANAGEMENT {
                 System.out.println("3 Digits only.");
                 continue;
             }
-
             System.out.println("Available room types:"
              + "\nStandard" 
              + "\nDeluxe" 
@@ -467,7 +474,6 @@ public class HOTELMANAGEMENT {
             );
             System.out.println("Enter capacity: ");
             int cap;
-
             try {
                 cap = Integer.parseInt(scanner.nextLine());
             } catch(NumberFormatException e) {
@@ -478,6 +484,27 @@ public class HOTELMANAGEMENT {
             if(cap <= 0) {
                 System.out.println("Cannot set 0 or negative numbers for room capacity.");
                 continue;
+            }
+
+            if(cap > 3) {
+                if(roomT.equalsIgnoreCase("Standard")) {
+                    System.out.println("Standard room type cannot exceed more than 3 capacity.");
+                    continue;
+                }
+            }
+
+            if(cap > 6) {
+                if(roomT.equalsIgnoreCase("Deluxe")) {
+                    System.out.println("Deluxe room type cannot exceed more than 6 capacity.");
+                    continue;
+                }
+            }
+
+            if(cap > 10) {
+                if(roomT.equalsIgnoreCase("Suite")) {
+                    System.out.println("Suite room type cannot exceed more than 10 capacity.");
+                    continue;
+                }
             }
 
             System.out.println("Enter price: ");
@@ -560,7 +587,7 @@ public class HOTELMANAGEMENT {
             }
 
             room.remove(rmtNum - 1);
-            System.out.println("Successfully removed room " + del.roomNumber);
+            System.out.println("Successfully removed!");
             return;
         }
     }
@@ -584,6 +611,16 @@ public class HOTELMANAGEMENT {
         }
     }
     static void REVENUE() {
-        System.out.println("=====REVENUE-MENU=====");
+        double totalRevMenu = 0.0;
+        int totalBookedInc = 0;
+        System.out.println("=====HOTEL-REVENUE=====");
+        for(BOOK bks : book) {
+            totalBookedInc += bks.bookedIncrementation;
+        }
+        for(ROOM rms : room) {
+            totalRevMenu += rms.totalRevenue;
+        }
+        System.out.println("COMPLETED RESERVATIONS: " + totalBookedInc );
+        System.out.println("TOTAL REVENUE: " + totalRevMenu);
     }
 }
