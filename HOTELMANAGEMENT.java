@@ -10,6 +10,8 @@ class ROOM {
     String roomStatus;
     String bookStatus;
     double totalRevenue;
+    int totalRoom;
+    int underMaintenance;
 }
 class BOOK {
     String guestName;
@@ -280,6 +282,7 @@ public class HOTELMANAGEMENT {
                     int rNum = random.nextInt(100,999);
                     BOOK bookV = new BOOK();
                     revstat = bookV;
+                    rev = bookV;
                     rcap.bookStatus = "Occupied";
                     bookV.reservationStatus = "Active";
                     bookV.bookedIncrementation = 1;
@@ -402,7 +405,8 @@ public class HOTELMANAGEMENT {
             System.out.println("[2] Remove Room");
             System.out.println("[3] View Room Status");
             System.out.println("[4] Total revenue");
-            System.out.println("[5] Back");
+            System.out.println("[5] Occupancy Tracker");
+            System.out.println("[6] Back");
 
             System.out.println("Enter an option: ");
             int option;
@@ -414,7 +418,7 @@ public class HOTELMANAGEMENT {
                 continue;
             }
 
-            if(option < 1 || option >= 6) {
+            if(option < 1 || option >= 7) {
                 System.out.println("Out of range.");
                 continue;
             }
@@ -423,7 +427,8 @@ public class HOTELMANAGEMENT {
                 case 2 -> REMOVE();
                 case 3 -> VIEWRS();
                 case 4 -> REVENUE();
-                case 5 -> {
+                case 5 -> OCCUPANCY();
+                case 6 -> {
                     while(true) {
                         System.out.println("Go back to main menu? (Yes/No)");
                         String back = scanner.nextLine();
@@ -492,6 +497,12 @@ public class HOTELMANAGEMENT {
                     continue;
                 }
             }
+            else if(cap < 3) {
+                if(roomT.equalsIgnoreCase("Standard")) {
+                    System.out.println("cannot set Standard type below 3 capacity.");
+                    continue;
+                }
+            }
 
             if(cap > 6) {
                 if(roomT.equalsIgnoreCase("Deluxe")) {
@@ -499,10 +510,22 @@ public class HOTELMANAGEMENT {
                     continue;
                 }
             }
+            else if(cap < 6) {
+                if(roomT.equalsIgnoreCase("Deluxe")) {
+                    System.out.println("cannot set Deluxe type below 6 capacity.");
+                    continue;
+                }
+            }
 
             if(cap > 10) {
                 if(roomT.equalsIgnoreCase("Suite")) {
                     System.out.println("Suite room type cannot exceed more than 10 capacity.");
+                    continue;
+                }
+            }
+            else if(cap < 10) {
+                if(roomT.equalsIgnoreCase("Suite")) {
+                    System.out.println("cannot set Suite type below 10 capacity.");
                     continue;
                 }
             }
@@ -545,10 +568,12 @@ public class HOTELMANAGEMENT {
             if(rst.equalsIgnoreCase("Active")) {
                 roomA.roomStatus = rst;
                 roomA.bookStatus = "Available";
+                roomA.totalRoom = 1;
             }
             else if(rst.equalsIgnoreCase("Under-Maintenance")) {
                 roomA.roomStatus = rst;
                 roomA.bookStatus = "Unavailable";
+                roomA.underMaintenance = -1;
             }
             room.add(roomA);
             System.out.println("Successfully added room.");
@@ -622,5 +647,25 @@ public class HOTELMANAGEMENT {
         }
         System.out.println("COMPLETED RESERVATIONS: " + totalBookedInc );
         System.out.println("TOTAL REVENUE: " + totalRevMenu);
+    }
+    static void OCCUPANCY() {
+        int totalRoomM = 0;
+        int reservedRoomM = 0;
+        int availableRoom = 0;
+        int unavailableRoom = 0;
+        System.out.println("=====OCCUPANCY-TRACKER=====");
+        for(ROOM rms: room) {
+            totalRoomM += rms.totalRoom;
+            unavailableRoom += rms.underMaintenance;
+        }
+        for(BOOK bks : book) {
+                reservedRoomM += bks.bookedIncrementation;
+            }
+            availableRoom = totalRoomM - reservedRoomM;
+        System.out.println("TOTAL ROOMS: " + totalRoomM);
+        System.out.println("RESERVED ROOMS: " + reservedRoomM);
+        System.out.println("AVAILABLE ROOMS: " + availableRoom);
+        System.out.println("UNAVAILABLE ROOMS: " + unavailableRoom);
+        System.out.println("==DELUXE-HOTEL-MANAGEMENT-SYSTEM-2026==");
     }
 }
